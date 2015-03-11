@@ -1,25 +1,42 @@
 'use strict';
 
-var trace = function(){
-  for(var i = 0; i < arguments.length; i++){
-    console.log(arguments[i]);
-  }
-};
+var users = (function (module) {
+    var host = 'http://localhost:3000';
 
-var App = App || {};
+    module.urls = {
+        users: host + '/users',
+        signIn: host + '/users/sign_in'
+    };
 
-App.square = function(x){
-  return x * x
-};
+    module.loginSuccess = function (response) {
+        localStorage.setItem('authToken', response.token);
+        localStorage.setItem('username', response.username);
 
-App.cube = function(x){
-  return x * x * x
-};
+        history.back();
+    };
 
-App.greet = function(string){
-  return string = typeof string !== 'undefined' ? 'Hello ' + string : "Hello World";
-};
+    module.authToken = function () {
+        localStorage.getItem('authToken');
+    };
 
-$(document).ready(function(){
-  trace('hello world');
+    module.setupAjaxRequests = function () {
+        $.ajaxPrefilter(function( options ) {
+            options.headers = {};
+            options.headers['AUTHORIZATION'] = 'Token token=' + module.authToken;
+        });
+    };
+
+    module.init = function () {
+        module.$name = $('#username');
+        module.$email = $('#email');
+        module.$password = $('#password');
+        module.$signUp = $('#sign_up');
+        module.$signIn = $('#sign_in');
+    };
+
+    return module;
+})(users || {});
+
+$(function () {
+    users.init();
 });
